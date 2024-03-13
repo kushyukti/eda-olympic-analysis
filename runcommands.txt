@@ -1,1 +1,9 @@
 python -m streamlit run app.py
+
+git remote add origin https://github.com/kushyukti/eda-olympic-analysis-git
+
+git push -u origin main
+
+
+
+python -m streamlit run app.py

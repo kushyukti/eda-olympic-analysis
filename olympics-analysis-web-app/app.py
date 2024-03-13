@@ -124,25 +124,13 @@ if user_menu == 'Overall Analysis':
   sport_list.sort()
   sport_list.insert(0,'Overall')
 
-  # selected_sport = st.selectbox('Select a Sport',sport_list)
-  # x = helper.most_successful(df,selected_sport)
-  # st.table(x)
 
-
-
-
-
-
-    # fig = px.line(events_over_time, x="Edition", y="Event")
-    # st.title("Events over the years")
-    # st.plotly_chart(fig)
-    
-
-
-
-
-
-
+  sport_list = df['Sport'].unique().tolist()
+  sport_list.sort()
+  sport_list.insert(0,'Overall')
+  selected_sport = st.selectbox('Select a Sport',sport_list)
+  x = helper.most_successful(df,selected_sport)
+  st.table(x)
 
 
 
@@ -150,4 +138,120 @@ if user_menu == 'Overall Analysis':
 
   
 if user_menu == 'Country-wise Analysis':
-    st.header('bla bla')
+    st.header('Country-wise Analysis')
+
+    country_list = df['region'].dropna().unique().tolist()
+    country_list.sort()
+    selected_country = st.sidebar.selectbox('Select a Country',country_list)
+
+    country_df = helper.yearwise_medal_tally(df,selected_country)
+
+
+    plt.figure(figsize=(10,6))
+    sns.lineplot(x="Year", y="Medal", data=country_df)
+    # sns.histplot(data=data,kde=True)
+    plt.title('Distribution of Age')
+    plt.legend(country_df.columns)
+    st.pyplot(plt)
+
+
+
+    # fig , ax = plt.subplots()
+    # ax.plot(country_df['Year'],country_df['Medal'])
+    # ax.set_xlabel('Year')
+    # ax.set_ylabel('Medals')
+    # ax.set_title(selected_country + ' Medal Tally over the years')
+    # st.pyplot(fig)
+
+    st.title(selected_country + " excels in the following sports")
+    pt = helper.country_event_heatmap(df,selected_country)
+    fig, ax = plt.subplots(figsize=(20, 20))
+    ax = sns.heatmap(pt,annot=True)
+    st.pyplot(fig)
+
+    st.title("Top 10 athletes of " + selected_country)
+    top10_df = helper.most_successful_countrywise(df,selected_country)
+    st.table(top10_df)
+
+
+if user_menu == 'Athlete wise Analysis':
+    st.header('Athlete-wise Analysis')
+
+    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
+
+    x1 = athlete_df['Age'].dropna()
+    x2 = athlete_df[athlete_df['Medal'] == 'Gold']['Age'].dropna()
+    x3 = athlete_df[athlete_df['Medal'] == 'Silver']['Age'].dropna()
+    x4 = athlete_df[athlete_df['Medal'] == 'Bronze']['Age'].dropna()
+
+    data = pd.DataFrame({'Overall Age': x1, 'Gold Medalist':x2,'Silver Medalist':x3,'Bronze Medalist':x4})
+    # fig = ff.create_distplot([x1, x2, x3, x4], ['Overall Age', 'Gold Medalist', 'Silver Medalist', 'Bronze Medalist'],show_hist=False, show_rug=False)
+    # fig.update_layout(autosize=False,width=1000,height=600)
+    # st.title("Distribution of Age")
+    # st.plotly_chart(fig)
+
+    plt.figure(figsize=(10,6))
+    sns.histplot(data=data,kde=True)
+    plt.title('Distribution of Age')
+    plt.legend(data.columns)
+    st.pyplot(plt)
+
+# --------------------------------------------------------------------------------------------------------------------------
+    # x9 = []
+    # name = []
+    # famous_sports = ['Basketball', 'Judo', 'Football', 'Tug-Of-War', 'Athletics',
+    #                  'Swimming', 'Badminton', 'Sailing', 'Gymnastics',
+    #                  'Art Competitions', 'Handball', 'Weightlifting', 'Wrestling',
+    #                  'Water Polo', 'Hockey', 'Rowing', 'Fencing',
+    #                  'Shooting', 'Boxing', 'Taekwondo', 'Cycling', 'Diving', 'Canoeing',
+    #                  'Tennis', 'Golf', 'Softball', 'Archery',
+    #                  'Volleyball', 'Synchronized Swimming', 'Table Tennis', 'Baseball',
+    #                  'Rhythmic Gymnastics', 'Rugby Sevens',
+    #                  'Beach Volleyball', 'Triathlon', 'Rugby', 'Polo', 'Ice Hockey']
+    # for sport in famous_sports:
+    #     temp_df = athlete_df[athlete_df['Sport'] == sport]
+    #     x9.append(temp_df[temp_df['Medal'] == 'Gold']['Age'].dropna())
+    #     name.append(sport)
+
+    # # data1 = pd.DataFrame({'Year':x,'Medal':famous_sports})
+    # df_ = pd.DataFrame({'Age':x9,'Medal Type':name})
+    # plt.figure(figsize=(10,6))
+    # sns.histplot(data=df_,kde=True, x='Age',hue='Medal Type',legend=True)
+    # plt.title('Distribution of Age wrt Sports(Gold Medalist)')
+    # plt.legend(title='Medal Type')
+    # plt.grid(True)
+    # st.pyplot(plt)
+
+
+
+    
+    sport_list = df['Sport'].unique().tolist()
+    sport_list.sort()
+    sport_list.insert(0, 'Overall')
+
+    st.title('Height Vs Weight')
+    selected_sport = st.selectbox('Select a Sport', sport_list)
+
+
+    temp_df = helper.weight_v_height(df,selected_sport)
+
+    
+    plt.figure(figsize=(10,6))
+    sns.scatterplot(x=temp_df['Weight'],y=temp_df['Height'],hue=temp_df['Medal'],style=temp_df['Sex'],s=60)
+    plt.grid(True)
+    plt.xlabel('Weight')
+    plt.ylabel('Height')
+
+    st.pyplot(plt)
+
+
+    st.title("Men Vs Women Participation Over the Years")
+    final = helper.men_vs_women(df)
+    plt.figure(figsize=(10,6))
+    sns.lineplot(x="Year", y="Male", data=final,label='Male')
+    sns.lineplot(x="Year", y="Female", data=final,label='Female')
+    plt.xlabel('Year')
+    plt.ylabel('Count')
+    plt.grid(True)
+    plt.tight_layout()
+    st.pyplot(plt)
